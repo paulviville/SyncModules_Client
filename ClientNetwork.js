@@ -6,12 +6,10 @@ const SCOPES = {
 
 export default class ClientNetwork { 
 	#socket;
-	#UUID = crypto.randomUUID( );
-	#onMessageCallbacks = new Map( ); /// Scope -> fn
+	#callbacks;
 
 	constructor ( ) {
-		console.log(`ClientNetwork - constructor`);
-		
+		console.log(`ClientNetwork - constructor `);
 	}
 
 	connect ( url = "ws://localhost", port = "3000" ) {
@@ -28,17 +26,16 @@ export default class ClientNetwork {
 	#handleOnOpen ( ) {
 		console.log( `ClientNetwork - #handleOnOpen` );
 
-		/// authentication message
-		/// placeholder before buffers
-		this.#socket.send(
-			JSON.stringify( { UUID: this.#UUID } )
-		);
+		this.#callbacks?.onOpen?.( );
     }
 
     #handleOnError ( error ) {
 		console.log( `ClientNetwork - #handleOnError` );
 
         console.error( 'WebSocket error:', error );
+
+		this.#callbacks?.onError?.( );
+
     }
 
     #handleOnClose ( event ) {
@@ -46,28 +43,32 @@ export default class ClientNetwork {
 
         if ( event.wasClean ) {
             console.log( `WebSocket closed cleanly, code=${ event.code }, reason=${ event.reason }` );
-        } else {
+		} else {
             console.warn( 'WebSocket connection closed unexpectedly.' );
-        }
+		}
+
+		this.#callbacks?.onClose?.( event );
     }
 
     #handleOnMessage ( message ) {
 		console.log( `ClientNetwork - #handleOnMessage` );
 
-		const messageData = JSON.parse( message );
-		console.log( messageData );
-		this.#onMessageCallbacks.get( messageData.scope )?.( messageData );
+		this.#callbacks?.onMessage?.( message );
     }
 
-	setOnMessageCallback ( scope, callback ) {
-		this.#onMessageCallbacks.set( scope, callback );
+	setCallbacks ( callbacks ) {
+		this.#callbacks = callbacks;
 	}
 
-	get UUID ( ) {
-		return this.#UUID;
-	}
+	#send ( message ) {
+		if ( this.#socket === undefined ) {
+			return;
+		}
 
-	send ( message ) {
 		this.#socket.send( message );
+	}
+
+	get send ( ) {
+		return this.#send.bind( this );
 	}
 }

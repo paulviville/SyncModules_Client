@@ -1,5 +1,11 @@
+import ClientManager from "./ClientManager.js";
 import ClientNetwork from "./ClientNetwork.js";
+import GUIController from "./GUIController.js";
+import ViewsRegistry from "./SyncModulesViews/ViewsRegistry.js";
+import SceneController from "./SceneController.js";
+import CameraController from "./SyncModulesViews/Controllers/CameraController.js";
 
+// new CameraController
 const SCOPES = {
 	SYSTEM: "SYSTEM",
 	INSTANCE: "INSTANCE",
@@ -16,29 +22,62 @@ const INSTANCE_COMMANDS = {
 
 const instanceList = new Set( );
 
-const clientNetwork = new ClientNetwork( );
 
-clientNetwork.setOnMessageCallback(  SCOPES.SYSTEM, ( messageData ) => {
-	// const messageData = JSON.parse( message );
-	console.log(SCOPES.SYSTEM, messageData);
-});
-
-clientNetwork.setOnMessageCallback(  SCOPES.MODULE, ( messageData ) => {
-	// const messageData = JSON.parse( message );
-	console.log(SCOPES.MODULE, messageData);
-});
+// const sceneController = new SceneController( );
+// sceneController.startRender( );
 
 
+const clientManager = new ClientManager( );
+// const clientNetwork = new ClientNetwork( );
+const guiController = new GUIController( );
+
+// const viewsRegistry = new ViewsRegistry(clientManager.modulesRegistry );
+// sceneController.scene.add(clientManager.viewsRegistry);
 
 
-clientNetwork.connect( );
+clientManager.connect( );
+
+
+
+window.clientManager = clientManager;
+// window.onbeforeunload( ( event ) =>  );
+window.addEventListener("beforeunload", (event) => { clientManager.beforeUnload( event ) } );
+
+// const testUUID = "00000000-0000-0000-0000-000000000000";
+let testModule;
+
+window.addModule = ( type, sync = false ) => {
+	// clientManager.modulesRegistry.input({
+	// 	moduleUUID: "00000000-0000-0000-0000-000000000000",
+	// 	command: "ADD_MODULE",
+	// 	data: { type: "ModuleCore", UUID: crypto.randomUUID()},
+	// });
+	console.log(clientManager.modulesRegistry)
+	const UUID = crypto.randomUUID();
+	clientManager.modulesRegistry.addModule(
+		type,
+		UUID,
+		sync
+	);
+
+	testModule = clientManager.modulesRegistry.modules.get( UUID );
+	window.module = testModule;
+}
+
+
+
+
+window.removeModule = ( UUID, sync = false ) => {
+	clientManager.modulesRegistry.removeModule( testModule.UUID, sync );
+}
+
 
 window.addInstance = ( ) => {
 	const instanceUUID = crypto.randomUUID( );
 	instanceList.add( instanceUUID );
 
 	const messageData = {
-		senderUUID: clientNetwork.UUID,
+		senderUUID: clientManager.UUID,
 		scope: SCOPES.SYSTEM,
 		payload: {
 			command: INSTANCE_COMMANDS.INSTANCE_ADD,
@@ -49,14 +88,14 @@ window.addInstance = ( ) => {
 	}
 	const message = JSON.stringify( messageData );
 
-	clientNetwork.send( message );
+	clientManager.clientNetwork.send( message );
 }
 
 window.removeInstance = ( instanceUUID ) => {
 	instanceList.delete( instanceUUID );
 
 	const messageData = {
-		senderUUID: clientNetwork.UUID,
+		senderUUID: clientManager.UUID,
 		scope: SCOPES.SYSTEM,
 		payload: {
 			command: INSTANCE_COMMANDS.INSTANCE_REMOVE,
@@ -67,13 +106,13 @@ window.removeInstance = ( instanceUUID ) => {
 	}
 	const message = JSON.stringify( messageData );
 
-	clientNetwork.send( message );
+	clientManager.clientNetwork.send( message );
 }
 
 window.joinInstance = ( instanceUUID ) => {
 
 	const messageData = {
-		senderUUID: clientNetwork.UUID,
+		senderUUID: clientManager.UUID,
 		scope: SCOPES.SYSTEM,
 		payload: {
 			command: INSTANCE_COMMANDS.INSTANCE_JOIN,
@@ -85,13 +124,13 @@ window.joinInstance = ( instanceUUID ) => {
 	}
 	const message = JSON.stringify( messageData );
 
-	clientNetwork.send( message );
+	clientManager.clientNetwork.send( message );
 }
 
 window.leaveInstance = ( instanceUUID ) => {
 
 	const messageData = {
-		senderUUID: clientNetwork.UUID,
+		senderUUID: clientManager.UUID,
 		scope: SCOPES.SYSTEM,
 		payload: {
 			command: INSTANCE_COMMANDS.INSTANCE_LEAVE,
@@ -103,7 +142,5 @@ window.leaveInstance = ( instanceUUID ) => {
 	}
 	const message = JSON.stringify( messageData );
 
-	clientNetwork.send( message );
+	clientManager.clientNetwork.send( message );
 }
-
-
