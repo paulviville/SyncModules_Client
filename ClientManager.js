@@ -2,6 +2,7 @@ import ClientNetwork from "./ClientNetwork.js";
 import ModulesRegistry from "./SyncModules/Core/ModulesRegistry.js";
 import ViewsRegistry from "./SyncModulesViews/ViewsRegistry.js";
 import SceneController from "./SceneController.js";
+import PrimitiveModule from "./SyncModules/PrimitiveModule.js";
 
 const SCOPES = {
 	SYSTEM: "SYSTEM",
@@ -39,6 +40,18 @@ export default class ClientManager {
 		this.#viewsRegistry = new ViewsRegistry( this.#modulesRegistry );
 		this.#sceneController.scene.add( this.#viewsRegistry );
 		this.#sceneController.startRender( );
+				
+		const primitiveModule = this.addModule("PrimitiveModule", false, true, true);
+		primitiveModule.updatePrimitive("Box", false);
+		primitiveModule.updateTransform( {
+			translation: [(1 - 2*Math.random()), (1 - 2*Math.random()), (1 - 2*Math.random()) ],
+			scale: [ 0.5, 0.5, 0.5 ]
+		});
+
+		const cameraModule = this.addModule("CameraModule", true, true, false);
+		this.#sceneController.controls.setModule( cameraModule );
+
+		this.#sceneController.transformController.setModule( primitiveModule );
 
 		this.#clientNetwork.setCallbacks( {
 			onOpen: ( ) => {
@@ -47,6 +60,8 @@ export default class ClientManager {
 				/// debug
 				const registryState = this.#modulesRegistry.outputState( );
 				console.log(registryState)
+				const stateBuffer = this.#bufferizeRegistryState( );
+
 
 				const message = this.#createMessage(SCOPES.SYSTEM, {
 					command: INSTANCE_COMMANDS.INSTANCE_JOIN,
@@ -56,10 +71,19 @@ export default class ClientManager {
 					},
 				});
 				this.#sendFn( message );
-				///
 
-				const cameraModule = this.addModule("CameraModule", true, true, false);
-				this.#sceneController.controls.setModule( cameraModule );
+
+				for ( const state of stateBuffer ) {
+					const message = this.#createMessage( SCOPES.MODULE, state );
+					this.#sendFn( message );
+				}
+
+
+
+
+
+
+				// /
 			},
 
 			onMessage: ( message ) => {
@@ -98,7 +122,6 @@ export default class ClientManager {
 	get viewsRegistry ( ) {
 		return this.#viewsRegistry;
 	}
-
 
 	get UUID ( ) {
 		return this.#UUID;
@@ -146,6 +169,13 @@ export default class ClientManager {
 
 	beforeUnload ( event ) {
 		this.#modulesOwned.forEach( moduleUUID => this.removeModule( moduleUUID, true ) );
-		// console.log("before unload")
+	}
+
+	#bufferizeRegistryState ( ) {
+		const stateBuffer = [];
+		for ( const [ UUID, module ] of this.#modulesRegistry.modules ) {
+			stateBuffer.push( module.outputState( ) )
+		}
+		return stateBuffer;
 	}
 }

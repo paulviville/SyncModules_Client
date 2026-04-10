@@ -1,6 +1,8 @@
 import * as THREE from './three/three.module.js';
 import { OrbitControls } from './three/controls/OrbitControls.js';
 import CameraController from './SyncModulesViews/Controllers/CameraController.js';
+import TransformController from './SyncModulesViews/Controllers/TransformController.js';
+import { TransformControls } from "controls/TransformControls.js";
 
 
 export default class SceneController {
@@ -8,6 +10,7 @@ export default class SceneController {
 	#scene;
 	#camera;
 	#cameraController;
+	#transformController;
 	#orbitControls;
 
 	constructor ( ) {
@@ -23,7 +26,12 @@ export default class SceneController {
         this.#scene.background = new THREE.Color(0xcccccc);
 		this.#camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 0.1, 100 );
 		this.#camera.position.set( -2, 3, -3 );
-		this.#cameraController = new CameraController( this.#camera, this.#renderer.domElement);
+		this.#cameraController = new CameraController( this.#camera, this.#renderer.domElement );
+		this.#transformController = new TransformController( this.#camera, this.#renderer.domElement );
+		this.#scene.add( this.#transformController.getHelper( ) );
+		this.#scene.add( this.#transformController.object3D );
+		this.#transformController.addEventListener( 'dragging-changed', event => this.#cameraController.enabled = !event.value );
+
 		// this.#orbitControls = new OrbitControls( this.#camera, this.#renderer.domElement);
 		// console.log(this.#orbitControls)
 		const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
@@ -32,6 +40,8 @@ export default class SceneController {
 		pointLight.position.set(-2, 3, -4);
 		this.#scene.add(pointLight);
 		this.#addDebug( );
+
+
 
 		window.onresize = this.#onWindowResize.bind( this );
 	}
@@ -70,6 +80,10 @@ export default class SceneController {
 
 	get controls ( ) {
 		return this.#cameraController;
+	}
+
+	get transformController ( ) {
+		return this.#transformController;
 	}
 
 	get scene ( ) {
