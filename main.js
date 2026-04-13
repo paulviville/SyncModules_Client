@@ -144,3 +144,111 @@ window.leaveInstance = ( instanceUUID ) => {
 
 	clientManager.clientNetwork.send( message );
 }
+
+let pointsModule = null;
+window.testPoints = ( ) => {
+	const UUID = crypto.randomUUID();
+	const module = clientManager.modulesRegistry.addModule(
+		"PointsModule",
+		UUID,
+		true
+	);
+	module.addPoints([{UUID: 1234, position: [1,2,3]}, {UUID: 2345, position: [2,3,4]}], true)
+	module.addPoints([{UUID: 3456, position: [-1,2,-3]}, {UUID: 4567, position: [2,-3,4]}], true )
+
+	// module.removePoints( [{UUID: 1234 }]);
+	const state = module.getState();
+	console.log(state)
+
+	pointsModule = module;
+	// module.clear( )
+}
+
+window.testPoints2 = ( ) => {
+	const module = pointsModule;
+
+	// module.removePoints( [{UUID: 1234}, {UUID: 3456}, {UUID: 4567}]);
+
+	
+	module.clear( true )
+}
+
+let textLogModule = null;
+window.testTextLog = ( ) => {
+	const UUID = crypto.randomUUID();
+	const textLogModule = clientManager.addModule(
+		"TextLogModule",
+		true,
+		true,
+		true
+	);
+	
+	window.textLogModule = textLogModule;
+
+	textLogModule.addText( "test 0 ", true );
+	textLogModule.addText( "test 1 ", true );
+	textLogModule.addText( "test 2 ", true );
+}
+
+window.testTrigger = ( ) => {
+	const triggerModule = clientManager.addModule(
+		"TriggerModule",
+		true,
+		true,
+		true
+	);
+	
+	window.triggerModule = triggerModule;
+}
+
+
+let fileModule = null;
+window.testFileModule = ( filename = "./Files/test.txt" ) => {
+	const fileModule = clientManager.addModule(
+		"FileModule",
+		true,
+		true,
+		true
+	);
+	
+	window.fileModule = fileModule;
+
+	// const response = await fetch( filename );
+	// const fileBuffer = await response.arrayBuffer( );
+	// // const text = await response.text()
+
+	// console.log(response, fileBuffer)
+	// const decoder = new TextDecoder("utf-8");
+	// const text = decoder.decode(fileBuffer)
+	// console.log(text)
+
+	const input = document.createElement("input");
+	input.type = "file";
+
+	input.onchange = ( ) => {
+		const file = input.files[0];
+		if( !file ) return;
+		console.log( file );
+
+		const reader = new FileReader( );
+		reader.onload = ( ) => {
+			// const fileData = 
+			// console.log(JSON.stringify({
+			// 	name: file.name,
+			// 	type: file.type,
+			// 	data: reader.result
+			// }));
+			fileModule.updateFile({
+				name: file.name,
+				type: file.type,
+				data: reader.result
+			}, true )
+
+		};
+		reader.readAsDataURL( file ); 
+	}
+	input.click();
+
+
+}
+
