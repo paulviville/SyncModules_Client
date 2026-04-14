@@ -5,6 +5,13 @@ import ViewsRegistry from "./SyncModulesViews/ViewsRegistry.js";
 import SceneController from "./SceneController.js";
 import CameraController from "./SyncModulesViews/Controllers/CameraController.js";
 
+import { GLTFLoader } from "../three/loaders/GLTFLoader.js";
+import { GLTFExporter } from "../three/exporters/GLTFExporter.js";
+import { DRACOLoader } from "../three/loaders/DRACOLoader.js";
+import GLTFImportController from "./SyncModulesViews/Controllers/GLTFImportController.js";
+// import { error } from "three/src/utils.js";
+
+
 // new CameraController
 const SCOPES = {
 	SYSTEM: "SYSTEM",
@@ -202,10 +209,24 @@ window.testTrigger = ( ) => {
 }
 
 
+function glbInjection ( arrayBuffer ) {
+	const view = new DataView(arrayBuffer);
+	const jsonChunkLength = view.getUint32(12, true);
+	const jsonBytes = new Uint8Array(arrayBuffer, 20, jsonChunkLength);
+	const jsonString = new TextDecoder().decode(jsonBytes);
+	const json = JSON.parse(jsonString);
+	console.log(json)
+
+	if ( json.nodes ) {
+
+	}
+}
+
 let fileModule = null;
-window.testFileModule = ( filename = "./Files/test.txt" ) => {
+
+window.testFileModule = ( ) => {
 	const fileModule = clientManager.addModule(
-		"FileModule",
+		"GLTFModule",
 		true,
 		true,
 		true
@@ -213,17 +234,9 @@ window.testFileModule = ( filename = "./Files/test.txt" ) => {
 	
 	window.fileModule = fileModule;
 
-	// const response = await fetch( filename );
-	// const fileBuffer = await response.arrayBuffer( );
-	// // const text = await response.text()
-
-	// console.log(response, fileBuffer)
-	// const decoder = new TextDecoder("utf-8");
-	// const text = decoder.decode(fileBuffer)
-	// console.log(text)
-
 	const input = document.createElement("input");
 	input.type = "file";
+	// input.accept = ".glb,model/gltf-binary";
 
 	input.onchange = ( ) => {
 		const file = input.files[0];
@@ -238,17 +251,81 @@ window.testFileModule = ( filename = "./Files/test.txt" ) => {
 			// 	type: file.type,
 			// 	data: reader.result
 			// }));
-			fileModule.updateFile({
-				name: file.name,
-				type: file.type,
-				data: reader.result
-			}, true )
+			
+			const result = reader.result;
+			glbInjection( result )
+			// const dracoLoader = new DRACOLoader( );
+			// dracoLoader.setDecoderPath("../three/loaders/DracoUtils/");
+			// const gltfLoader = new GLTFLoader( );
+			// gltfLoader.setDRACOLoader( dracoLoader );
+			// const gltfExporter = new GLTFExporter( );
+
+			// const base64 = result.split( ',' )[ 1 ];
+			// const binary = atob( base64 );
+			// // console.log(binary)
+			// const bytes = new Uint8Array( binary.length );
+			// for ( let i = 0; i < binary.length; ++i ) {
+			// 	bytes[ i ] = binary.charCodeAt( i );
+			// }
+			// const buffer = bytes.buffer;
+			// gltfLoader.parse( buffer, ' ', ( gltf ) => {
+			// 	console.log( gltf );
+			// 	gltf.scene.traverse( ( obj ) => {
+			// 		// console.log(obj.name)
+			// 	} );
+			// 	gltfExporter.parse( gltf.scene,
+			// 		( glb ) => {
+
+			// 			const bytes = new Uint8Array(glb);
+			// 			let binary = '';
+			// 			bytes.forEach(b => binary += String.fromCharCode(b));
+
+			// 			console.log(binary)
+			// 			fileModule.updateFile({
+			// 				name: file.name,
+			// 				type: file.type,
+			// 				data: 'data:model/gltf-binary;base64,' + btoa( binary )
+			// 			}, true )
+			// 			console.log( glb )
+
+			// 		},
+			// 		( error ) => console.log( error ),
+			// 		{ binary: true }
+			// 	);
+
+			// });
+
+
+			// fileModule.updateFile({
+			// 	name: file.name,
+			// 	type: file.type,
+			// 	data: reader.result
+			// }, true )
+
 
 		};
-		reader.readAsDataURL( file ); 
+
+		reader.readAsArrayBuffer( file ); 
 	}
 	input.click();
 
 
+}
+
+
+
+window.testFileModule2 = ( ) => {
+	const fileModule = clientManager.addModule(
+		"GLTFModule",
+		true,
+		true,
+		true
+	);
+	
+	window.fileModule = fileModule;
+
+	const gltfImportController = new GLTFImportController( );
+	gltfImportController.setModule( fileModule );
+	gltfImportController.inputFile( );
 }
 
