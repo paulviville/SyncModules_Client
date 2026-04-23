@@ -3,6 +3,7 @@ import { OrbitControls } from './three/controls/OrbitControls.js';
 import CameraController from './SyncModulesViews/Controllers/CameraController.js';
 import TransformController from './SyncModulesViews/Controllers/TransformController.js';
 import { TransformControls } from "controls/TransformControls.js";
+import SceneGraphController from './SyncModulesViews/Controllers/SceneGraphController.js';
 
 
 export default class SceneController {
@@ -12,6 +13,7 @@ export default class SceneController {
 	#cameraController;
 	#transformController;
 	#orbitControls;
+	#sceneGraphController;
 
 	constructor ( ) {
 		console.log( `SceneController - constructor` );
@@ -31,6 +33,11 @@ export default class SceneController {
 		this.#scene.add( this.#transformController.getHelper( ) );
 		this.#scene.add( this.#transformController.object3D );
 		this.#transformController.addEventListener( 'dragging-changed', event => this.#cameraController.enabled = !event.value );
+		
+		this.#sceneGraphController = new SceneGraphController( this.#camera, this.#renderer.domElement );
+		this.#scene.add( this.#sceneGraphController.getHelper( ) );
+		this.#scene.add( this.#sceneGraphController.object3D );
+		this.#sceneGraphController.addEventListener( 'dragging-changed', event => this.#cameraController.enabled = !event.value );
 
 		// this.#orbitControls = new OrbitControls( this.#camera, this.#renderer.domElement);
 		// console.log(this.#orbitControls)
@@ -84,6 +91,10 @@ export default class SceneController {
 
 	get transformController ( ) {
 		return this.#transformController;
+	}
+
+	get sceneGraphController ( ) {
+		return this.#sceneGraphController;
 	}
 
 	get scene ( ) {

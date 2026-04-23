@@ -315,17 +315,22 @@ window.testFileModule = ( ) => {
 
 
 window.testFileModule2 = ( ) => {
-	const fileModule = clientManager.addModule(
+	const graphModule = clientManager.addModule(
 		"GLTFModule",
 		true,
 		true,
 		true
 	);
 	
-	window.fileModule = fileModule;
+	window.graphModule = graphModule;
 
 	const gltfImportController = new GLTFImportController( );
-	gltfImportController.setModule( fileModule );
+	gltfImportController.setModule( graphModule );
 	gltfImportController.inputFile( );
+
 }
 
+window.testFileModule3 = ( ) => {
+	clientManager.sceneController.sceneGraphController.setModule( window.graphModule );
+	clientManager.sceneController.sceneGraphController.setTargetNode( window.graphModule.nodeUUIDs[1] );
+}
