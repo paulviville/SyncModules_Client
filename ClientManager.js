@@ -18,8 +18,18 @@ const INSTANCE_COMMANDS = {
 	OWNERSHIP: "OWNERSHIP", /// declare the ownership of a module
 }
 
+function uuid( ) {
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+}
+
 export default class ClientManager {
-	#UUID = crypto.randomUUID( );
+	#UUID = uuid();
 	#clientNetwork = new ClientNetwork( this.#UUID );
 	#modulesRegistry;
 	#viewsRegistry;
@@ -144,7 +154,7 @@ export default class ClientManager {
 	}
 
 	addModule ( type, sync = false, own = false, view = true ) {
-		const UUID = crypto.randomUUID();
+		const UUID = uuid();
 		const module = this.#modulesRegistry.addModule( type, UUID, sync );
 		
 		if ( !view ) {

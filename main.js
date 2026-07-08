@@ -42,7 +42,11 @@ const guiController = new GUIController( );
 // sceneController.scene.add(clientManager.viewsRegistry);
 
 
-clientManager.connect( );
+clientManager.connect("ws://130.79.90.188");
+// clientManager.connect();
+
+// clientManager.connect("wss://gscop-continuum.g-scop.grenoble-inp.fr", "443");
+// clientManager.connect("wss://icos.univ-reims.fr", "443");
 
 
 
@@ -330,7 +334,7 @@ window.testFileModule2 = ( ) => {
 
 }
 
-window.testFileModule3 = ( ) => {
+window.testFileModule3 = ( node = 0 ) => {
 	clientManager.sceneController.sceneGraphController.setModule( window.graphModule );
-	clientManager.sceneController.sceneGraphController.setTargetNode( window.graphModule.nodeUUIDs[1] );
+	clientManager.sceneController.sceneGraphController.setTargetNode( window.graphModule.nodeUUIDs[node] );
 }
