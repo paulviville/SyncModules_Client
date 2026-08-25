@@ -9,6 +9,8 @@ import { GLTFLoader } from "../three/loaders/GLTFLoader.js";
 import { GLTFExporter } from "../three/exporters/GLTFExporter.js";
 import { DRACOLoader } from "../three/loaders/DRACOLoader.js";
 import GLTFImportController from "./SyncModulesViews/Controllers/GLTFImportController.js";
+import ImageImportController from "./SyncModulesViews/Controllers/ImageImportController.js";
+import ImageModule from "./SyncModules/ImageModule.js";
 // import { error } from "three/src/utils.js";
 
 
@@ -228,93 +230,93 @@ function glbInjection ( arrayBuffer ) {
 
 let fileModule = null;
 
-window.testFileModule = ( ) => {
-	const fileModule = clientManager.addModule(
-		"GLTFModule",
-		true,
-		true,
-		true
-	);
+// window.testFileModule = ( ) => {
+// 	const fileModule = clientManager.addModule(
+// 		"GLTFModule",
+// 		true,
+// 		true,
+// 		true
+// 	);
 	
-	window.fileModule = fileModule;
+// 	window.fileModule = fileModule;
 
-	const input = document.createElement("input");
-	input.type = "file";
-	// input.accept = ".glb,model/gltf-binary";
+// 	const input = document.createElement("input");
+// 	input.type = "file";
+// 	// input.accept = ".glb,model/gltf-binary";
 
-	input.onchange = ( ) => {
-		const file = input.files[0];
-		if( !file ) return;
-		console.log( file );
+// 	input.onchange = ( ) => {
+// 		const file = input.files[0];
+// 		if( !file ) return;
+// 		console.log( file );
 
-		const reader = new FileReader( );
-		reader.onload = ( ) => {
-			// const fileData = 
-			// console.log(JSON.stringify({
-			// 	name: file.name,
-			// 	type: file.type,
-			// 	data: reader.result
-			// }));
+// 		const reader = new FileReader( );
+// 		reader.onload = ( ) => {
+// 			// const fileData = 
+// 			// console.log(JSON.stringify({
+// 			// 	name: file.name,
+// 			// 	type: file.type,
+// 			// 	data: reader.result
+// 			// }));
 			
-			const result = reader.result;
-			glbInjection( result )
-			// const dracoLoader = new DRACOLoader( );
-			// dracoLoader.setDecoderPath("../three/loaders/DracoUtils/");
-			// const gltfLoader = new GLTFLoader( );
-			// gltfLoader.setDRACOLoader( dracoLoader );
-			// const gltfExporter = new GLTFExporter( );
+// 			const result = reader.result;
+// 			glbInjection( result )
+// 			// const dracoLoader = new DRACOLoader( );
+// 			// dracoLoader.setDecoderPath("../three/loaders/DracoUtils/");
+// 			// const gltfLoader = new GLTFLoader( );
+// 			// gltfLoader.setDRACOLoader( dracoLoader );
+// 			// const gltfExporter = new GLTFExporter( );
 
-			// const base64 = result.split( ',' )[ 1 ];
-			// const binary = atob( base64 );
-			// // console.log(binary)
-			// const bytes = new Uint8Array( binary.length );
-			// for ( let i = 0; i < binary.length; ++i ) {
-			// 	bytes[ i ] = binary.charCodeAt( i );
-			// }
-			// const buffer = bytes.buffer;
-			// gltfLoader.parse( buffer, ' ', ( gltf ) => {
-			// 	console.log( gltf );
-			// 	gltf.scene.traverse( ( obj ) => {
-			// 		// console.log(obj.name)
-			// 	} );
-			// 	gltfExporter.parse( gltf.scene,
-			// 		( glb ) => {
+// 			// const base64 = result.split( ',' )[ 1 ];
+// 			// const binary = atob( base64 );
+// 			// // console.log(binary)
+// 			// const bytes = new Uint8Array( binary.length );
+// 			// for ( let i = 0; i < binary.length; ++i ) {
+// 			// 	bytes[ i ] = binary.charCodeAt( i );
+// 			// }
+// 			// const buffer = bytes.buffer;
+// 			// gltfLoader.parse( buffer, ' ', ( gltf ) => {
+// 			// 	console.log( gltf );
+// 			// 	gltf.scene.traverse( ( obj ) => {
+// 			// 		// console.log(obj.name)
+// 			// 	} );
+// 			// 	gltfExporter.parse( gltf.scene,
+// 			// 		( glb ) => {
 
-			// 			const bytes = new Uint8Array(glb);
-			// 			let binary = '';
-			// 			bytes.forEach(b => binary += String.fromCharCode(b));
+// 			// 			const bytes = new Uint8Array(glb);
+// 			// 			let binary = '';
+// 			// 			bytes.forEach(b => binary += String.fromCharCode(b));
 
-			// 			console.log(binary)
-			// 			fileModule.updateFile({
-			// 				name: file.name,
-			// 				type: file.type,
-			// 				data: 'data:model/gltf-binary;base64,' + btoa( binary )
-			// 			}, true )
-			// 			console.log( glb )
+// 			// 			console.log(binary)
+// 			// 			fileModule.updateFile({
+// 			// 				name: file.name,
+// 			// 				type: file.type,
+// 			// 				data: 'data:model/gltf-binary;base64,' + btoa( binary )
+// 			// 			}, true )
+// 			// 			console.log( glb )
 
-			// 		},
-			// 		( error ) => console.log( error ),
-			// 		{ binary: true }
-			// 	);
+// 			// 		},
+// 			// 		( error ) => console.log( error ),
+// 			// 		{ binary: true }
+// 			// 	);
 
-			// });
-
-
-			// fileModule.updateFile({
-			// 	name: file.name,
-			// 	type: file.type,
-			// 	data: reader.result
-			// }, true )
+// 			// });
 
 
-		};
+// 			// fileModule.updateFile({
+// 			// 	name: file.name,
+// 			// 	type: file.type,
+// 			// 	data: reader.result
+// 			// }, true )
 
-		reader.readAsArrayBuffer( file ); 
-	}
-	input.click();
+
+// 		};
+
+// 		reader.readAsArrayBuffer( file ); 
+// 	}
+// 	input.click();
 
 
-}
+// }
 
 
 
@@ -337,4 +339,35 @@ window.testFileModule2 = ( ) => {
 window.testFileModule3 = ( node = 0 ) => {
 	clientManager.sceneController.sceneGraphController.setModule( window.graphModule );
 	clientManager.sceneController.sceneGraphController.setTargetNode( window.graphModule.nodeUUIDs[node] );
+}
+
+
+window.testImageModule = ( x = 0, y = 0, z = 0 ) => {
+	const imageModule = clientManager.addModule(
+		"ImageModule",
+		true,
+		true,
+		true,
+	);
+
+	const imageImportController = new ImageImportController( );
+	imageImportController.setModule( imageModule );
+	imageImportController.inputFile( );
+
+	imageModule.updateTransform( { translation: [ x, y, z] }, true );
+}
+
+window.testImage360Module = ( x = 0, y = 0, z = 0 ) => {
+	const imageModule = clientManager.addModule(
+		"Image360Module",
+		true,
+		true,
+		true,
+	);
+
+	const imageImportController = new ImageImportController( );
+	imageImportController.setModule( imageModule );
+	imageImportController.inputFile( );
+
+	imageModule.updateTransform( { translation: [ x, y, z] }, true );
 }

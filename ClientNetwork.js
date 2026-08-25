@@ -51,7 +51,7 @@ export default class ClientNetwork {
     }
 
     #handleOnMessage ( message ) {
-		console.log( `ClientNetwork - #handleOnMessage` );
+		// console.log( `ClientNetwork - #handleOnMessage` );
 
 		this.#callbacks?.onMessage?.( message );
     }
