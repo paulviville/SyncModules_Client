@@ -11,6 +11,8 @@ import ImageModule from "./SyncModules/ImageModule.js";
 // import { error } from "three/src/utils.js";
 import * as THREE from "./three/three.module.js";
 
+// import * as ml5 from "./ml5.js";
+
 // new CameraController
 const SCOPES = {
 	SYSTEM: "SYSTEM",
@@ -364,3 +366,60 @@ window.skeletonTest3 = ( ) =>  {
 	skelModule.setTransforms( boneTransforms, true );
 
 }
+
+const video = document.getElementById('webcam');
+
+const stream = await navigator.mediaDevices.getUserMedia({
+  video: true,
+  audio: false
+});
+
+video.srcObject = stream;
+
+// Wait for video metadata
+await new Promise(resolve => {
+  video.onloadedmetadata = resolve;
+});
+
+await video.play();
+
+console.log('video:', video.videoWidth, video.videoHeight);
+console.log('readyState:', video.readyState);
+console.log('paused:', video.paused);
+
+
+
+
+const videoTexture = new THREE.VideoTexture(video);
+videoTexture.colorSpace = THREE.SRGBColorSpace;
+
+const geometry = new THREE.PlaneGeometry(4, 3);
+const material = new THREE.MeshBasicMaterial({
+  map: videoTexture,
+  side: THREE.DoubleSide
+});
+
+const quad = new THREE.Mesh(geometry, material);
+sceneController.scene.add(quad);
+
+const handPose = await ml5.handPose();
+// console.log(handPose)
+// function findHand ( result ) {
+// 	console.log(result)
+// }
+
+// handPose.detectStart( video, findHand );
+
+const canvas = document.createElement('canvas');
+canvas.width = video.videoWidth;
+canvas.height = video.videoHeight;
+const ctx = canvas.getContext('2d');
+console.log(ctx)
+function loop() {
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  handPose.detect(canvas, (result) => {
+    console.log(result);
+	setTimeout( loop, 50 );
+  });
+}
+loop();
