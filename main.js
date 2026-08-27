@@ -393,7 +393,7 @@ console.log('paused:', video.paused);
 const videoTexture = new THREE.VideoTexture(video);
 videoTexture.colorSpace = THREE.SRGBColorSpace;
 
-const geometry = new THREE.PlaneGeometry(4, 3);
+const geometry = new THREE.PlaneGeometry(1, 1 / (4/3));
 const material = new THREE.MeshBasicMaterial({
   map: videoTexture,
   side: THREE.DoubleSide
@@ -410,6 +410,17 @@ const handPose = await ml5.handPose();
 
 // handPose.detectStart( video, findHand );
 
+
+const handGroup = new THREE.Group();
+const handMaterial = new THREE.MeshBasicMaterial( );
+const handPointGeometry = new THREE.SphereGeometry( 0.01, 10, 10 );
+for ( let i = 0; i < 21; i++ ) {
+	const handPoint = new THREE.Mesh( handPointGeometry, handMaterial );
+	handGroup.add( handPoint );
+}
+sceneController.scene.add(handGroup);
+
+
 const canvas = document.createElement('canvas');
 canvas.width = video.videoWidth;
 canvas.height = video.videoHeight;
@@ -418,7 +429,17 @@ console.log(ctx)
 function loop() {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   handPose.detect(canvas, (result) => {
-    console.log(result);
+	if ( result.length ) {
+		console.log( result[0] )
+		const points = result[0].keypoints3D;
+		const { x3D, y3D, z3D } = result[ 0 ].wrist;
+		handGroup.position.set(  x3D, y3D, z3D )
+		for ( let i = 0; i < 21; i++ ) {
+			handGroup.children[ i ].position.set( points[ i ].x, points[ i ].y, points[ i ].z )
+			const handPoint = new THREE.Mesh( handPointGeometry, handMaterial );
+			handGroup.add( handPoint );
+		}
+	}
 	setTimeout( loop, 50 );
   });
 }
