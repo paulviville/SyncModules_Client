@@ -5,14 +5,11 @@ import ViewsRegistry from "./SyncModulesViews/ViewsRegistry.js";
 import SceneController from "./SceneController.js";
 import CameraController from "./SyncModulesViews/Controllers/CameraController.js";
 
-import { GLTFLoader } from "../three/loaders/GLTFLoader.js";
-import { GLTFExporter } from "../three/exporters/GLTFExporter.js";
-import { DRACOLoader } from "../three/loaders/DRACOLoader.js";
 import GLTFImportController from "./SyncModulesViews/Controllers/GLTFImportController.js";
 import ImageImportController from "./SyncModulesViews/Controllers/ImageImportController.js";
 import ImageModule from "./SyncModules/ImageModule.js";
 // import { error } from "three/src/utils.js";
-
+import * as THREE from "./three/three.module.js";
 
 // new CameraController
 const SCOPES = {
@@ -49,6 +46,9 @@ clientManager.connect("ws://130.79.90.188");
 
 // clientManager.connect("wss://gscop-continuum.g-scop.grenoble-inp.fr", "443");
 // clientManager.connect("wss://icos.univ-reims.fr", "443");
+
+const sceneController = clientManager.sceneController;
+console.log(sceneController)
 
 
 
@@ -230,94 +230,6 @@ function glbInjection ( arrayBuffer ) {
 
 let fileModule = null;
 
-// window.testFileModule = ( ) => {
-// 	const fileModule = clientManager.addModule(
-// 		"GLTFModule",
-// 		true,
-// 		true,
-// 		true
-// 	);
-	
-// 	window.fileModule = fileModule;
-
-// 	const input = document.createElement("input");
-// 	input.type = "file";
-// 	// input.accept = ".glb,model/gltf-binary";
-
-// 	input.onchange = ( ) => {
-// 		const file = input.files[0];
-// 		if( !file ) return;
-// 		console.log( file );
-
-// 		const reader = new FileReader( );
-// 		reader.onload = ( ) => {
-// 			// const fileData = 
-// 			// console.log(JSON.stringify({
-// 			// 	name: file.name,
-// 			// 	type: file.type,
-// 			// 	data: reader.result
-// 			// }));
-			
-// 			const result = reader.result;
-// 			glbInjection( result )
-// 			// const dracoLoader = new DRACOLoader( );
-// 			// dracoLoader.setDecoderPath("../three/loaders/DracoUtils/");
-// 			// const gltfLoader = new GLTFLoader( );
-// 			// gltfLoader.setDRACOLoader( dracoLoader );
-// 			// const gltfExporter = new GLTFExporter( );
-
-// 			// const base64 = result.split( ',' )[ 1 ];
-// 			// const binary = atob( base64 );
-// 			// // console.log(binary)
-// 			// const bytes = new Uint8Array( binary.length );
-// 			// for ( let i = 0; i < binary.length; ++i ) {
-// 			// 	bytes[ i ] = binary.charCodeAt( i );
-// 			// }
-// 			// const buffer = bytes.buffer;
-// 			// gltfLoader.parse( buffer, ' ', ( gltf ) => {
-// 			// 	console.log( gltf );
-// 			// 	gltf.scene.traverse( ( obj ) => {
-// 			// 		// console.log(obj.name)
-// 			// 	} );
-// 			// 	gltfExporter.parse( gltf.scene,
-// 			// 		( glb ) => {
-
-// 			// 			const bytes = new Uint8Array(glb);
-// 			// 			let binary = '';
-// 			// 			bytes.forEach(b => binary += String.fromCharCode(b));
-
-// 			// 			console.log(binary)
-// 			// 			fileModule.updateFile({
-// 			// 				name: file.name,
-// 			// 				type: file.type,
-// 			// 				data: 'data:model/gltf-binary;base64,' + btoa( binary )
-// 			// 			}, true )
-// 			// 			console.log( glb )
-
-// 			// 		},
-// 			// 		( error ) => console.log( error ),
-// 			// 		{ binary: true }
-// 			// 	);
-
-// 			// });
-
-
-// 			// fileModule.updateFile({
-// 			// 	name: file.name,
-// 			// 	type: file.type,
-// 			// 	data: reader.result
-// 			// }, true )
-
-
-// 		};
-
-// 		reader.readAsArrayBuffer( file ); 
-// 	}
-// 	input.click();
-
-
-// }
-
 
 
 window.testFileModule2 = ( ) => {
@@ -370,4 +282,85 @@ window.testImage360Module = ( x = 0, y = 0, z = 0 ) => {
 	imageImportController.inputFile( );
 
 	imageModule.updateTransform( { translation: [ x, y, z] }, true );
+}
+
+const bones = [ ];
+let skelHelper;
+let skelModule;
+let boneTransforms;
+window.skeletonTest = ( ) =>  {
+	const boneUUIDs = [
+		{
+			UUID: crypto.randomUUID( ),
+			parent: undefined,
+		},
+		{
+			UUID: crypto.randomUUID( ),
+			parent: undefined,
+		},
+		{
+			UUID: crypto.randomUUID( ),
+			parent: undefined,
+		},
+		{
+			UUID: crypto.randomUUID( ),
+			parent: undefined,
+		},
+	]
+	boneUUIDs[ 1 ].parent = boneUUIDs[ 0 ].UUID;
+	boneUUIDs[ 2 ].parent = boneUUIDs[ 1 ].UUID;
+	boneUUIDs[ 3 ].parent = boneUUIDs[ 1 ].UUID;
+
+	boneTransforms = [
+		{
+			UUID: boneUUIDs[ 0 ].UUID,
+			transform: {
+				translation: [ 0, 1, 0.5 ],
+			},
+		},
+		{
+			UUID: boneUUIDs[ 1 ].UUID,
+			transform: {
+				translation: [ 1, 0, 0 ],
+			},
+		},
+		{
+			UUID: boneUUIDs[ 2 ].UUID,
+			transform: {
+				translation: [ 0, 1, 0 ],
+			},
+		},
+		{
+			UUID: boneUUIDs[ 3 ].UUID,
+			transform: {
+				translation: [ 0, 0, 1 ],
+			},
+		},
+	]
+
+	skelModule = clientManager.addModule( "SkeletonModule", 
+		true,
+		true,
+		true
+	);
+
+	skelModule.setBones( boneUUIDs, true );
+
+	skelModule.setTransforms( boneTransforms, true );
+}
+
+window.skeletonTest2 = ( ) =>  {
+	boneTransforms[0].transform.translation = [ 1, 0, 1 ];
+	boneTransforms[1].transform.translation = [ 0, 1, 1 ];
+	boneTransforms[2].transform.translation = [ 1, 0, 1 ];
+	boneTransforms[3].transform.translation = [ 1, 1, 1 ];
+	skelModule.setTransforms( boneTransforms, true );
+
+}
+
+window.skeletonTest3 = ( ) =>  {
+	const r0 = new THREE.Quaternion( ).setFromAxisAngle( new THREE.Vector3( 0, 1, 0), Math.PI / 3  );
+	boneTransforms[0].transform.rotation = r0.toArray( );
+	skelModule.setTransforms( boneTransforms, true );
+
 }
