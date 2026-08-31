@@ -15,6 +15,7 @@ const INSTANCE_COMMANDS = {
 	INSTANCE_REMOVE: "INSTANCE_REMOVE",
 	INSTANCE_JOIN: "INSTANCE_JOIN",
 	INSTANCE_LEAVE: "INSTANCE_LEAVE",
+	INSTANCE_CLEAR: "INSTANCE_CLEAR",
 	OWNERSHIP: "OWNERSHIP", /// declare the ownership of a module
 }
 
@@ -191,5 +192,18 @@ export default class ClientManager {
 
 	get sceneController ( ) {
 		return this.#sceneController;
+	}
+
+
+	/// debug
+	clearInstance ( ) {
+		const message = this.#createMessage(SCOPES.SYSTEM, {
+			command: INSTANCE_COMMANDS.INSTANCE_CLEAR,
+			data: {
+				instanceUUID: "00000000-0000-0000-0000-000000000000",
+			},
+		});
+		
+		this.#sendFn( message );
 	}
 }

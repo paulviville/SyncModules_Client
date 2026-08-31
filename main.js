@@ -24,6 +24,7 @@ const INSTANCE_COMMANDS = {
 	INSTANCE_REMOVE: "INSTANCE_REMOVE",
 	INSTANCE_JOIN: "INSTANCE_JOIN",
 	INSTANCE_LEAVE: "INSTANCE_LEAVE",
+	INSTANCE_CLEAR: "INSTANCE_CLEAR",
 }
 
 const instanceList = new Set( );
@@ -156,6 +157,11 @@ window.leaveInstance = ( instanceUUID ) => {
 	const message = JSON.stringify( messageData );
 
 	clientManager.clientNetwork.send( message );
+}
+
+
+window.clearInstance = ( ) => {
+	clientManager.clearInstance( );
 }
 
 let pointsModule = null;
