@@ -381,127 +381,7 @@ window.skeletonTest3 = ( ) =>  {
 
 }
 
-// const video = document.getElementById('webcam');
 
-// const stream = await navigator.mediaDevices.getUserMedia({
-//   video: true,
-//   audio: false
-// });
-
-// video.srcObject = stream;
-
-// // Wait for video metadata
-// await new Promise(resolve => {
-//   video.onloadedmetadata = resolve;
-// });
-
-// await video.play();
-
-// console.log('video:', video.videoWidth, video.videoHeight);
-// console.log('readyState:', video.readyState);
-// console.log('paused:', video.paused);
-
-
-
-
-// const videoTexture = new THREE.VideoTexture(video);
-// videoTexture.colorSpace = THREE.SRGBColorSpace;
-
-// const geometry = new THREE.PlaneGeometry(1, 1 / (4/3));
-// const material = new THREE.MeshBasicMaterial({
-//   map: videoTexture,
-//   side: THREE.DoubleSide
-// });
-
-// const quad = new THREE.Mesh(geometry, material);
-// sceneController.scene.add(quad);
-// quad.position.z += 1
-
-
-
-
-// const handPose = await ml5.handPose(
-// 	{
-// 		maxHands: 1,
-// 		flipped: true,
-// 	}
-// );
-// console.log(handPose)
-// function findHand ( result ) {
-// 	console.log(result)
-// }
-
-// handPose.detectStart( video, findHand );
-
-
-// const handGroup = new THREE.Group();
-// const handMaterial = new THREE.MeshBasicMaterial( );
-// const handPointGeometry = new THREE.SphereGeometry( 0.01, 10, 10 );
-// for ( let i = 0; i < 21; i++ ) {
-// 	const handPoint = new THREE.Mesh( handPointGeometry, handMaterial );
-// 	handGroup.add( handPoint );
-// }
-// sceneController.scene.add( handGroup );
-
-
-
-
-// const facePointsNb = 468;
-// const facePositions = new Float32Array( facePointsNb * 3 );
-
-// const faceGeometry = new THREE.BufferGeometry( );
-// faceGeometry.setAttribute( "position", new THREE.BufferAttribute( facePositions, 3) );
-// const faceMaterial = new THREE.PointsMaterial( { color: 0xffffff, size: 0.01 } );
-// const facePoints = new THREE.Points( faceGeometry, faceMaterial );
-// sceneController.scene.add( facePoints );
-// const facePos = faceGeometry.attributes.position;
-// facePos.setUsage(THREE.DynamicDrawUsage);
-// let faceMesh = await ml5.faceMesh( {
-// 	maxFaces: 1,
-// 	refineLandmarks: false,
-// 	flipped: true,
-// } );
-
-
-
-
-// const canvas = document.createElement('canvas');
-// canvas.width = video.videoWidth;
-// canvas.height = video.videoHeight;
-// const ctx = canvas.getContext('2d');
-// // console.log(ctx)
-// function loop() {
-//   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-//   handPose.detect(canvas, (result) => {
-// 	// console.log( result[ 0 ] )
-// 	if ( result.length ) {
-// 		const points = result[0].keypoints3D;
-// 		const { x3D, y3D, z3D } = result[ 0 ].wrist;
-// 		// handGroup.position.set(  x3D, y3D, z3D )
-// 		for ( let i = 0; i < 21; i++ ) {
-// 			handGroup.children[ i ].position.set( points[ i ].x, points[ i ].y, points[ i ].z )
-// 			const handPoint = new THREE.Mesh( handPointGeometry, handMaterial );
-// 			handGroup.add( handPoint );
-// 		}
-// 	}
-// 	// setTimeout( loop, 50 );
-//   });
-//   faceMesh.detect(canvas, (result) => {
-// 	// console.log( result[ 0 ] )
-// 	if ( result.length ) {
-// 		const points = result[ 0 ].keypoints;
-// 		for ( let i = 0; i < facePointsNb; i++ ) {
-// 			facePos.array[ i * 3 + 0 ] = points[ i ].x / 640;
-// 			facePos.array[ i * 3 + 1 ] = points[ i ].y / 640;
-// 			facePos.array[ i * 3 + 2 ] = points[ i ].z / 640;
-// 		}
-// 		facePos.needsUpdate = true;
-// 		// console.log(facePos.array)
-// 	}
-// 	setTimeout( loop, 50 );
-//   });
-// }
-// loop();
 
 let video;
 let ctx;
@@ -546,18 +426,14 @@ window.initCamera = async function ( ) {
 	ctx = canvas.getContext('2d');
 }
 
-// window.initML5
-
-
-
 window.initHands = async function ( ) {
 	if ( video === undefined ) {
-		
+		await initCamera( )
 	}
 	
 	const handPose = await ml5.handPose(
 		{
-			maxHands: 1,
+			maxHands: 2,
 			flipped: true,
 		}
 	);
@@ -572,93 +448,63 @@ window.initHands = async function ( ) {
 	}
 	sceneController.scene.add( handGroup );
 
-	const boneUUIDs = [ ];
-	for ( let i = 0; i < 21; i++ ) {
-		boneUUIDs.push( {
-			UUID: uuid( ),
-			parent: undefined,
-		} );
-		boneTransforms.push( {
-			UUID: boneUUIDs[ i ].UUID,
-			transform: { },
-		} );
-	}
+	const leftHand = createHand( );
+	const rightHand = createHand( );
 
-	boneUUIDs[ 1 ].parent = boneUUIDs[ 0 ].UUID;
-	boneUUIDs[ 2 ].parent = boneUUIDs[ 1 ].UUID;
-	boneUUIDs[ 3 ].parent = boneUUIDs[ 2 ].UUID;
-	boneUUIDs[ 4 ].parent = boneUUIDs[ 3 ].UUID;
+	const hands = {
+		Left: {
+			...createHand( ),
+			module: clientManager.addModule( "SkeletonModule", true, true, true ),
+		},
+		Right: {
+			...createHand( ),
+			module: clientManager.addModule( "SkeletonModule", true, true, true ),
+		}
+	};
 
-	boneUUIDs[ 5 ].parent = boneUUIDs[ 0 ].UUID;
-	boneUUIDs[ 6 ].parent = boneUUIDs[ 5 ].UUID;
-	boneUUIDs[ 7 ].parent = boneUUIDs[ 6 ].UUID;
-	boneUUIDs[ 8 ].parent = boneUUIDs[ 7 ].UUID;
+	hands.Left.module.setBones( hands.Left.boneUUIDs, true );
+	hands.Right.module.setBones( hands.Right.boneUUIDs, true );
 
-	boneUUIDs[ 9 ].parent = boneUUIDs[ 0 ].UUID;
-	boneUUIDs[ 10 ].parent = boneUUIDs[ 9 ].UUID;
-	boneUUIDs[ 11 ].parent = boneUUIDs[ 10 ].UUID;
-	boneUUIDs[ 12 ].parent = boneUUIDs[ 11 ].UUID;
+	hands.Left.module.setTransforms( hands.Left.boneTransforms, true );
+	hands.Right.module.setTransforms( hands.Right.boneTransforms, true );
 
-	boneUUIDs[ 13 ].parent = boneUUIDs[ 0 ].UUID;
-	boneUUIDs[ 14 ].parent = boneUUIDs[ 13 ].UUID;
-	boneUUIDs[ 15 ].parent = boneUUIDs[ 14 ].UUID;
-	boneUUIDs[ 16 ].parent = boneUUIDs[ 15 ].UUID;
-
-	boneUUIDs[ 17 ].parent = boneUUIDs[ 0 ].UUID;
-	boneUUIDs[ 18 ].parent = boneUUIDs[ 17 ].UUID;
-	boneUUIDs[ 19 ].parent = boneUUIDs[ 18 ].UUID;
-	boneUUIDs[ 20 ].parent = boneUUIDs[ 19 ].UUID;
-
-	skelModule = clientManager.addModule( "SkeletonModule", 
-		true,
-		true,
-		true
-	);
-
-	skelModule.setBones( boneUUIDs, true );
-
-	skelModule.setTransforms( boneTransforms, true );
 
 	function loop() {
 		ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-		handPose.detect(canvas, (result) => {
-			// console.log( result[ 0 ] )
-			if ( result.length ) {
-				const points = result[0].keypoints3D;
-				for ( let i = 0; i < 21; i++ ) {
-					handGroup.children[ i ].position.set( points[ i ].x, points[ i ].y, points[ i ].z )
-					const handPoint = new THREE.Mesh( handPointGeometry, handMaterial );
-					handGroup.add( handPoint );
-					boneTransforms[ i ].transform.translation = [ points[ i ].x, points[ i ].y, points[ i ].z ];
-				}
-				skelModule.setTransforms( boneTransforms, true );
-			}
+		handPose.detect(canvas, ( results ) => {
+			results.forEach( handData => {
+				const { handedness, keypoints3D, keypoints, wrist } = handData;
+				const hand = hands[ handedness ];
+				const points = handPositions( keypoints );
+				// const points = handPositions( keypoints3D, { x: wrist.x / 640, y: wrist.y / 640 } );
+				hand.boneTransforms.forEach( ( boneTransform, i ) => {
+					boneTransform.transform.translation ??= [ 0, 0, 0 ];
+					boneTransform.transform.translation[ 0 ] = points[ i ].x / 640 ;
+					boneTransform.transform.translation[ 1 ] = points[ i ].y / 640 ;
+					boneTransform.transform.translation[ 2 ] = points[ i ].z / 640 ;
+				} );
+				hand.module.setTransforms( hand.boneTransforms, true );
+			} );
 			setTimeout( loop, 50 );
 		});
 	}
 	loop( );
 }
 
-window.initFace = async function ( ) {	
-	const facePointsNb = 468;
+window.initFace = async function ( ) {
+	if ( video === undefined ) {
+		await initCamera( )
+	}
+	
+
+	const facePointsNb = 478;
 	const facePositions = new Float32Array( facePointsNb * 3 );
 
-	const faceGeometry = new THREE.BufferGeometry( );
-	faceGeometry.setAttribute( "position", new THREE.BufferAttribute( facePositions, 3) );
-	const faceMaterial = new THREE.PointsMaterial( { color: 0xffffff, size: 0.01 } );
-	const facePoints = new THREE.Points( faceGeometry, faceMaterial );
-	sceneController.scene.add( facePoints );
-	const facePos = faceGeometry.attributes.position;
-	facePos.setUsage(THREE.DynamicDrawUsage);
 	let faceMesh = await ml5.faceMesh( {
 		maxFaces: 1,
-		refineLandmarks: false,
-		flipped: false,
+		refineLandmarks: true,
+		flipped: true,
 	} );
-
-
-
-
 
 	const pointsModule = clientManager.addModule( "PointsModule", 
 		true,
@@ -683,15 +529,10 @@ window.initFace = async function ( ) {
 			if ( result.length ) {
 				const points = result[ 0 ].keypoints;
 				for ( let i = 0; i < facePointsNb; i++ ) {
-					facePos.array[ i * 3 + 0 ] = points[ i ].x / 640;
-					facePos.array[ i * 3 + 1 ] = points[ i ].y / 640;
-					facePos.array[ i * 3 + 2 ] = points[ i ].z / 640;
 					pointsData[ i ].position[ 0 ] = points[ i ].x / 640;
-					pointsData[ i ].position[ 1 ] = points[ i ].y / 640 * - 1;
+					pointsData[ i ].position[ 1 ] = points[ i ].y / 640;
 					pointsData[ i ].position[ 2 ] = points[ i ].z / 640;
-					// pointsData[ i ].position[ points[ i ].x / 640, points[ i ].y / 640, points[ i ].z / 640 ]
 				}
-				facePos.needsUpdate = true;
 				pointsModule.updatePoints( pointsData, true );
 			}
 			setTimeout( loop, 50 );
@@ -703,69 +544,158 @@ window.initFace = async function ( ) {
 
 
 window.initBody = async function ( ) {	
+	if ( video === undefined ) {
+		await initCamera( )
+	}
+	
 	const bodyPose = await ml5.bodyPose(
 		{
-			// maxHands: 1,
 			flipped: true,
 		}
 	);
-	// const facePointsNb = 468;
-	// const facePositions = new Float32Array( facePointsNb * 3 );
 
-	// const faceGeometry = new THREE.BufferGeometry( );
-	// faceGeometry.setAttribute( "position", new THREE.BufferAttribute( facePositions, 3) );
-	// const faceMaterial = new THREE.PointsMaterial( { color: 0xffffff, size: 0.01 } );
-	// const facePoints = new THREE.Points( faceGeometry, faceMaterial );
-	// sceneController.scene.add( facePoints );
-	// const facePos = faceGeometry.attributes.position;
-	// facePos.setUsage(THREE.DynamicDrawUsage);
-	// let faceMesh = await ml5.faceMesh( {
-	// 	maxFaces: 1,
-	// 	refineLandmarks: false,
-	// 	flipped: false,
-	// } );
+	const bodyPointsNb = 17;
 
+	const body = {
+		...createBody( ),
+		module: clientManager.addModule( "SkeletonModule", true, true, true ),
+	};
 
-
-
-
-	// const pointsModule = clientManager.addModule( "PointsModule", 
-	// 	true,
-	// 	true,
-	// 	true
-	// );
-
-	// const pointsData = [ ];
-	// for ( let i = 0; i < facePointsNb; i++ ) {
-	// 	pointsData.push( {
-	// 		UUID: uuid( ),
-	// 		position: [ 0, 0, 0 ],
-	// 	} );
-	// }
-
-	// pointsModule.addPoints( pointsData, true );
+	body.module.setBones( body.boneUUIDs, true );
+	body.module.setTransforms( body.boneTransforms, true );
 
 	function loop() {
 		ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 		bodyPose.detect( canvas, ( result ) => {
-			// console.log( result[ 0 ] )
 			if ( result.length ) {
-				console.log( result[ 0 ] )
-				// const points = result[ 0 ].keypoints;
-				// for ( let i = 0; i < facePointsNb; i++ ) {
-				// 	// facePos.array[ i * 3 + 0 ] = points[ i ].x / 640;
-				// 	// facePos.array[ i * 3 + 1 ] = points[ i ].y / 640;
-				// 	// facePos.array[ i * 3 + 2 ] = points[ i ].z / 640;
-				// 	// pointsData[ i ].position[ 0 ] = points[ i ].x / 640;
-				// 	// pointsData[ i ].position[ 1 ] = points[ i ].y / 640 * - 1;
-				// 	// pointsData[ i ].position[ 2 ] = points[ i ].z / 640;
-				// 	// pointsData[ i ].position[ points[ i ].x / 640, points[ i ].y / 640, points[ i ].z / 640 ]
-				// }
-				// facePos.needsUpdate = true;
-				// pointsModule.updatePoints( pointsData, true );
+				const points = bodyPositions( result[ 0 ].keypoints );
+
+				body.boneTransforms.forEach( ( boneTransform, i ) => {
+					boneTransform.transform.translation ??= [ 0, 0, 0 ];
+					boneTransform.transform.translation[ 0 ] = points[ i ].x / 640 ;
+					boneTransform.transform.translation[ 1 ] = points[ i ].y / 640 ;
+					boneTransform.transform.translation[ 2 ] = points[ i ].z / 640 ;
+				} );
+				body.module.setTransforms( body.boneTransforms, true );
 			}
 			setTimeout( loop, 50 );
 		});
 	}
 	loop( );
+}
+
+
+
+window.track = async function( ) {
+	await initCamera( );
+	await initFace( );
+	await initHands( );
+	await initBody( );
+}
+
+
+
+
+
+
+
+const handParents = [ undefined, 0, 1, 2, 3, 0, 5, 6, 7, 0, 9, 10, 11, 0, 13, 14, 15, 0, 17, 18, 19 ];
+function handPositions ( rawPositions, offset = { x: 0, y: 0, z: 0 } ) {
+	const positions = new Array( 21 );
+	
+	for ( let i = 20; i >= 0; --i ) {
+		positions[ i ] = { x: rawPositions[ i ].x, y: rawPositions[ i ].y, z: rawPositions[ i ].z ?? 0};
+
+		const parentPos = rawPositions[ handParents[ i ] ];
+		if ( parentPos === undefined ) {
+			positions[ i ].x += offset.x;
+			positions[ i ].y += offset.y;
+			// positions[ i ].z += offset.z;
+			continue;
+		}
+
+		positions[ i ].x -= parentPos.x;
+		positions[ i ].y -= parentPos.y;
+		positions[ i ].z -= parentPos.z ?? 0;
+	}
+	
+
+
+	return positions;
+}
+
+
+function createHand ( ) {
+
+	const boneUUIDs = new Array( 21 );
+	const boneTransforms = new Array( 21 );
+
+	for ( let i = 0; i < 21; ++i ) {
+		boneUUIDs[ i ] =  {
+			UUID: uuid( ),
+			parent: undefined,
+		};
+		boneTransforms[ i ] =  {
+			UUID: boneUUIDs[ i ].UUID,
+			transform: { },
+		};
+	}
+
+	for ( let i = 0; i < 21; ++i ) {
+		boneUUIDs[ i ].parent = boneUUIDs[ handParents[ i ] ]?.UUID;
+	}
+
+	return { boneUUIDs, boneTransforms };
+}
+
+const bodyParents = [ undefined, 0, 1, 1, 2, 3, 0, 0, 6, 7, 8, 9, 0, 0, 12, 13, 14, 15 ];
+function createBody ( ) {
+	const boneUUIDs = new Array( 18 );
+	const boneTransforms = new Array( 18 );
+
+	for ( let i = 0; i < 18; ++i ) {
+		boneUUIDs[ i ] =  {
+			UUID: uuid( ),
+			parent: undefined,
+		};
+		boneTransforms[ i ] =  {
+			UUID: boneUUIDs[ i ].UUID,
+			transform: { },
+		};
+	}
+
+	for ( let i = 0; i < 18; ++i ) {
+		boneUUIDs[ i ].parent = boneUUIDs[ bodyParents[ i ] ]?.UUID;
+	}
+
+	return { boneUUIDs, boneTransforms };
+}
+
+function bodyPositions ( rawPositions, offset = { x: 0, y: 0, z: 0 } ) {
+	// rawPositions
+	rawPositions.unshift( {
+		x: ( rawPositions[ 5 ].x + rawPositions[ 6 ].x ) / 2, 
+		y: ( rawPositions[ 5 ].y + rawPositions[ 6 ].y ) / 2,
+		z: 0,
+	} );
+	const positions = new Array( 18 );
+
+	for ( let i = 17; i >= 0; --i ) {
+		positions[ i ] = { x: rawPositions[ i ].x, y: rawPositions[ i ].y, z: rawPositions[ i ].z ?? 0};
+
+		const parentPos = rawPositions[ bodyParents[ i ] ];
+		if ( parentPos === undefined ) {
+			// positions[ i ].x += offset.x;
+			// positions[ i ].y += offset.y;
+			continue;
+		}
+
+		positions[ i ].x -= parentPos.x;
+		positions[ i ].y -= parentPos.y;
+		positions[ i ].z -= parentPos.z ?? 0;
+	}
+	
+
+
+	return positions;
 }
