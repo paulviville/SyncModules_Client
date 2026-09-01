@@ -426,6 +426,25 @@ window.initCamera = async function ( ) {
 	ctx = canvas.getContext('2d');
 }
 
+window.initPicStream = async function ( ) {
+	if ( video === undefined ) {
+		await initCamera( )
+	}
+
+	const imageModule = clientManager.addModule(
+		"ImageModule",
+		true, true, true,
+	);
+
+	function loop() {
+		ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+		const imageData = canvas.toDataURL("image/png", 0.5);
+		imageModule.setImage( imageData, true );
+		setTimeout( loop, 50 );
+	}
+	loop( );
+}
+
 window.initHands = async function ( ) {
 	if ( video === undefined ) {
 		await initCamera( )
