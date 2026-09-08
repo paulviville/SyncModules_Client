@@ -370,3 +370,128 @@ window.skeletonTest3 = ( ) =>  {
 	skelModule.setTransforms( boneTransforms, true );
 
 }
+
+let displayModule;
+window.testDisplays = ( ) => {
+	displayModule = clientManager.addModule( "DisplaysModule", 
+		true,
+		true,
+		true
+	);
+
+	displayModule.setOnChange( "ADD_DISPLAY", ( display ) => {
+		console.log( display )
+
+		const matrices = computeMatrix( display.corners );
+		
+		const camera = new THREE.PerspectiveCamera( );
+		camera.matrixAutoUpdate = false;
+		const cameraHelper = new THREE.CameraHelper( camera );
+		clientManager.sceneController.scene.add( cameraHelper );
+		camera.matrixWorldInverse.copy( matrices.view );
+		camera.matrixWorld.copy( matrices.view ).invert( );
+		camera.projectionMatrix.copy( matrices.projection );
+		camera.projectionMatrixInverse.copy( matrices.projection ).invert( );
+		cameraHelper.update( );
+	})
+
+	console.log(displayModule)
+}
+
+window.testDisplays2 = ( ) => {
+	displayModule.addDisplay( {
+		label: "display0",
+		UUID: crypto.randomUUID( ),
+		corners: [
+			[ 0.5, -0.5, 1.5 ],
+			[ -0.5, -0.5, 1.5 ],
+			[ 0.5, 0.5, 1.5 ],
+			[ -0.5, 0.5, 1.5 ],
+		]
+	}, true );
+}
+
+window.testDisplays3 = ( ) => {
+	displayModule.addDisplay( {
+		label: "display1",
+		UUID: crypto.randomUUID( ),
+		corners: [
+			[ 0.5, 0.75, 1.5 ],
+			[ -0.5, 0.75, 1.5 ],
+			[ 0.5, 1.75, 1.0 ],
+			[ -0.5, 1.75, 1.0 ],
+		]
+	}, true );
+}
+
+window.testDisplays4 = ( ) => {
+	displayModule.addDisplay( {
+		label: "display1",
+		UUID: crypto.randomUUID( ),
+		corners: [
+			[ -0.75, -0.5, 1.5 ],
+			[ -1.75, -0.5, 1.0 ],
+			[ -0.75, 0.5, 1.5 ],
+			[ -1.75, 0.5, 1.0 ],
+		]
+	}, true );
+}
+
+window.initClientDisplay = ( ) => {
+	clientManager.modulesRegistry.setOnChange( "ADD_MODULE", ( moduleData ) => {
+		console.log( moduleData )
+		if( moduleData.type == "DisplaysModule" ) {
+			displayModule = clientManager.modulesRegistry.getModule( moduleData.UUID );
+			console.log(displayModule )
+
+		}
+	} );
+}
+
+const headMatrix = new THREE.Matrix4( ).makeTranslation( 0, 1, 0 );
+const eye = new THREE.Vector3( 0.1, 1, 0.05 );
+const nearCP = 0.1;
+const farCP = 10.1;
+function computeMatrix ( screenCorners ) {
+	const corners = screenCorners.map( c => {
+		return new THREE.Vector3( ).fromArray( c );
+	} );
+	const ss = { 
+		X: new THREE.Vector3( ), 
+		Y: new THREE.Vector3( ), 
+		Z: new THREE.Vector3( ), 
+		R: new THREE.Matrix4( ) 
+	};
+
+	ss.X.copy( corners[ 1 ] ).sub( corners[ 0 ] ).normalize( );
+	ss.Y.copy( corners[ 2 ] ).sub( corners[ 0 ] ).normalize( );
+	ss.Z.crossVectors( ss.X, ss.Y ).normalize( );
+
+	ss.R.makeBasis( ss.X, ss.Y, ss.Z ).transpose( );
+
+	console.log(corners)
+
+
+	// corners.forEach( c => { c.applyMatrix4( this.#transform ); } );
+	corners.forEach( c => { c.sub( eye ); } );
+	const dist = - corners[ 0 ].dot( ss.Z );
+	const ND = nearCP / dist;
+
+	const l = ss.X.dot( corners[ 0 ] ) * ND;
+	const r = ss.X.dot( corners[ 1 ] ) * ND;
+	const b = ss.Y.dot( corners[ 0 ] ) * ND;
+	const t = ss.Y.dot( corners[ 2 ] ) * ND;
+
+	const projection = new THREE.Matrix4( );
+	projection.set(
+		(2.0 * nearCP) / (r - l), 0.0, (r + l) / (r - l), 0.0,
+		0.0, (2.0 * nearCP) / (t - b), (t + b) / (t - b), 0.0, 
+		0.0, 0.0, -(farCP + nearCP) / (farCP - nearCP), -(2.0 * farCP * nearCP) / (farCP - nearCP),
+		0.0, 0.0, -1.0, 0.0
+	);
+	const view = new THREE.Matrix4( );
+	view.makeTranslation( -eye.x, -eye.y, -eye.z );
+	view.premultiply( ss.R );
+
+	return { projection, view };
+}
