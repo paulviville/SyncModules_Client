@@ -52,7 +52,7 @@ export default class ClientManager {
 		this.#sceneController.scene.add( this.#viewsRegistry );
 		this.#sceneController.startRender( );
 				
-		// const primitiveModule = this.addModule("PrimitiveModule", false, true, true);
+		const primitiveModule = this.addModule("PrimitiveModule", false, true, true);
 		// primitiveModule.updatePrimitive("Box", false);
 		// primitiveModule.updateTransform( {
 		// 	translation: [(1 - 2*Math.random()), (1 - 2*Math.random()), (1 - 2*Math.random()) ],
@@ -62,7 +62,7 @@ export default class ClientManager {
 		const cameraModule = this.addModule("CameraModule", true, true, false);
 		this.#sceneController.controls.setModule( cameraModule );
 
-		// this.#sceneController.transformController.setModule( primitiveModule );
+		this.#sceneController.transformController.setModule( primitiveModule );
 
 		this.#clientNetwork.setCallbacks( {
 			onOpen: ( ) => {
