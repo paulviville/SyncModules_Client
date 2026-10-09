@@ -37,7 +37,7 @@ export default class DisplayController {
 		matrix.compose( 
 			new THREE.Vector3( ...translation ), 
 			new THREE.Quaternion( ...rotation ), 
-			new THREE.Vector3( ...scale)
+			new THREE.Vector3( ...scale )
 		);
 		// console.log( matrix );
 		return matrix;

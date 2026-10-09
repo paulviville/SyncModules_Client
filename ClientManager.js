@@ -53,16 +53,16 @@ export default class ClientManager {
 		this.#sceneController.startRender( );
 				
 		const primitiveModule = this.addModule("PrimitiveModule", false, true, true);
-		// primitiveModule.updatePrimitive("Box", false);
-		// primitiveModule.updateTransform( {
-		// 	translation: [(1 - 2*Math.random()), (1 - 2*Math.random()), (1 - 2*Math.random()) ],
-		// 	scale: [ 0.5, 0.5, 0.5 ]
-		// });
+		primitiveModule.updatePrimitive("Box", false);
+		primitiveModule.updateTransform( {
+			translation: [(1 - 2*Math.random()), (1 - 2*Math.random()), (1 - 2*Math.random()) ],
+			scale: [ 0.5, 0.5, 0.5 ]
+		});
 
 		const cameraModule = this.addModule("CameraModule", true, true, false);
 		this.#sceneController.controls.setModule( cameraModule );
 
-		this.#sceneController.transformController.setModule( primitiveModule );
+		// this.#sceneController.transformController.setModule( primitiveModule );
 
 		this.#clientNetwork.setCallbacks( {
 			onOpen: ( ) => {
@@ -151,7 +151,7 @@ export default class ClientManager {
 	#onModuleMessage ( payload ) {
 		const { moduleUUID } = payload;
 		const module = this.#modulesRegistry.getModule( moduleUUID );
-		module.input( payload );
+		module?.input( payload );
 	}
 
 	addModule ( type, sync = false, own = false, view = true ) {
