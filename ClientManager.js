@@ -57,7 +57,7 @@ export default class ClientManager {
 		primitiveModule.updateTransform( {
 			translation: [(1 - 2*Math.random()), (1 - 2*Math.random()), (1 - 2*Math.random()) ],
 			scale: [ 0.5, 0.5, 0.5 ]
-		});
+		}, true );
 
 		const cameraModule = this.addModule("CameraModule", true, true, false);
 		this.#sceneController.controls.setModule( cameraModule );

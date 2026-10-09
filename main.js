@@ -133,6 +133,40 @@ window.testImage360Module = ( x = 0, y = 0, z = 0 ) => {
 	imageModule.updateTransform( { translation: [ x, y, z] }, true );
 }
 
+function colorWheel(x, y) {
+  // Joystick input normalized to -1..1
+  const angle = Math.atan2(-y, x);
+
+  const hue = ((angle / (Math.PI * 2)) + 1) % 1;
+  const saturation = Math.min(1, Math.sqrt(x * x + y * y));
+  const lightness = 0.5;
+
+  const color = new THREE.Color();
+  color.setHSL(hue, saturation, lightness);
+
+  return color.toArray();
+}
+
+window.addPrimitive = ( x, y ) => {
+	const primitiveModule = clientManager.addModule(
+		"PrimitiveModule",
+		true,
+		true,
+		true,
+	);
+
+	primitiveModule.updateTransform( {
+		translation: [2*(1 - 2*Math.random()), 2*(1 - 2*Math.random()), 2*(1 - 2*Math.random()) ],
+		scale: [ 0.5, 0.5, 0.5 ]
+	}, true );
+
+	primitiveModule.updateColor( 
+		 [ ...colorWheel( x, y ), 1.0],
+		 true );
+}
+
+
+
 // const bones = [ ];
 // let skelHelper;
 // let skelModule;
