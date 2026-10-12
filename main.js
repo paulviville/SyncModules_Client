@@ -485,3 +485,7 @@ window.initializeDisplays = ( ) => {
 // 	], true)
 
 // }
+
+window.clearScene = ( ) => {
+	clientManager.clearInstance( );
+}
