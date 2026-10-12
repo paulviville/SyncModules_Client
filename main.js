@@ -81,7 +81,7 @@ let fileModule = null;
 
 
 
-window.testFileModule2 = ( ) => {
+window.loadGLTF = ( ) => {
 	const graphModule = clientManager.addModule(
 		"GLTFModule",
 		true,
@@ -97,7 +97,7 @@ window.testFileModule2 = ( ) => {
 
 }
 
-window.testFileModule3 = ( node = 0 ) => {
+window.selectNode = ( node = 0 ) => {
 	clientManager.sceneController.sceneGraphController.setModule( window.graphModule );
 	clientManager.sceneController.sceneGraphController.setTargetNode( window.graphModule.nodeUUIDs[node] );
 }
